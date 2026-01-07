@@ -23,7 +23,7 @@ export async function onRequest(context) {
     }
 
     // add to KV store
-    const response = await add(context.env.TVKV, doc)
+    const response = await add(context.env.CHOIRLESSKV, doc)
 
     // send response
     return new Response(JSON.stringify(response), okResponse)
