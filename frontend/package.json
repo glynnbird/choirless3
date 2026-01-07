@@ -1,0 +1,31 @@
+{
+  "name": "choirless",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "@vite-pwa/nuxt": "^1.0.4",
+    "nuxt": "^4.2.2",
+    "vite-plugin-vuetify": "^2.1.2"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@latest"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "latest"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "arm64",
+    "x64"
+  ]
+}
