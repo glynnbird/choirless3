@@ -38,25 +38,17 @@ const generateMetadata = function (doc) {
   return {
     date: doc.date,
     title: doc.title,
-    watching: doc.watching,
-    on: doc.on,
-    uptoep: doc.uptoep,
-    uptomax: doc.uptomax,
-    type: doc.type,
-    season: doc.season,
+    numTracks: doc.tracks ? doc.tracks.length : 0,
     ts: doc.ts
   }
 }
 
 export const add = async function (kv, json) {
-  if (!json.id) {
-    json.id = new Date().getTime().toString()
-  }
   const metadata = generateMetadata(json)
 
   // if there's all the parts we need
   if (json && json.id && metadata) {
-    await kv.put(`doc:${json.id}`, JSON.stringify(json), { metadata })
+    await kv.put(json.id, JSON.stringify(json), { metadata })
 
     // send response
     return { ok: true, id: json.id }
