@@ -4,6 +4,7 @@ const { auth } = useAuth()
 const route = useRoute()
 const { queue } = useShowAlert()
 const { busy } = useBusy()
+const { songs } = useSongsList()
 
 // local page items
 const drawer = ref(false)
@@ -23,7 +24,7 @@ async function home() {
       <template v-slot:append>
         <v-progress-circular v-if="busy" style="margin-right: 10px;" size="small" color="blue"
           indeterminate></v-progress-circular>
-        <v-chip size="small" label color="white">99</v-chip>
+        <v-chip size="small" label color="white">{{ songs.length }}</v-chip>
         <v-btn v-if="route.name === 'index'" icon="mdi-plus" @click="navigateTo('/add')"></v-btn>
         <v-btn v-if="route.name !== 'index'" icon="mdi-chevron-left" @click="$router.back()"></v-btn>
       </template>
