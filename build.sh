@@ -3,7 +3,7 @@
 # build frontend
 echo "Building frontend 🏢"
 cd frontend
-npm ci
+npm install
 npm run generate
 mv dist ../
 cd ..
@@ -11,6 +11,6 @@ cd ..
 # build functions
 echo "Building functions ƛ😉"
 cd code
-npm ci
+npm install
 ./build.sh
 cd ..
