@@ -36,12 +36,12 @@ export default defineNuxtConfig({
       "name": "Choirless",
       "icons": [
         {
-          "src": "/tv_192.png",
+          "src": "/choirless192.png",
           "type": "image/png",
           "sizes": "192x192"
         },
         {
-          "src": "/tv_512.png",
+          "src": "/choirless192.png",
           "type": "image/png",
           "sizes": "512x512"
         }
