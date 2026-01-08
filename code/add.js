@@ -17,9 +17,7 @@ export async function onRequest(context) {
 
     const doc = {
       id,
-      title: json.title,
-      tracks: json.tracks,
-      ts: json.ts || 0
+      ...json
     }
 
     // add to KV store
