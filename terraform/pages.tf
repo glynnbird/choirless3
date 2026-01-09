@@ -38,6 +38,12 @@ resource "cloudflare_pages_project" "frontend_project" {
           }
         }
 
+        r2_buckets = {
+          VIDEO_BUCKET = {
+            name = cloudflare_r2_bucket.video_bucket.name
+          }
+        }
+
         kv_namespaces = {
           CHOIRLESSKV = { 
             namespace_id = cloudflare_workers_kv_namespace.choirlesskv.id
@@ -53,6 +59,12 @@ resource "cloudflare_pages_project" "frontend_project" {
           API_KEY = {
             type = "plain_text"
             value = random_string.apiKey.id
+          }
+        }
+
+        r2_buckets = {
+          VIDEO_BUCKET = {
+            name = cloudflare_r2_bucket.video_bucket.name
           }
         }
 
