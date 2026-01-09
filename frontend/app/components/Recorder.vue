@@ -6,6 +6,7 @@ const streamHeight = ref(0)
 const performanceStream = ref(null)
 const performanceVideo = ref(null)
 const performanceData = ref([])
+const recording = ref(false)
 let mR
 
 async function enableCapture() {
@@ -42,6 +43,7 @@ async function enableCapture() {
 
 
 async function record() {
+  recording.value = true
   performanceData.value = []
   // Oh Firefox, why you gotta do me like this?
   // start MediaRecorder and add event handlers to
@@ -60,7 +62,16 @@ async function record() {
   mR.start(50);
 }
 
+function getCurrentTime() {
+  if (recording.value) {
+    return performanceVideo.value.currentTime
+  } else {
+    return 0
+  }
+}
+
 async function stop() {
+  recording.value = false
   mR.stop()
 
   // create video URL
@@ -81,7 +92,8 @@ async function stop() {
 // function exposed to the parent
 defineExpose({
   record,
-  stop
+  stop,
+  getCurrentTime
 })
 
 setTimeout(enableCapture, 50)

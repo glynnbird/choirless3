@@ -5,6 +5,8 @@
   const recordedVideo = ref(null)
 
   async function record() {
+    recordingComplete.value = false
+    recordedVideo.value = null
     recorder.value.record()
     recording.value = true
   }
