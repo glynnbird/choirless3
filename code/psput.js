@@ -17,10 +17,10 @@ export async function onRequest(context) {
 
   // get keys
   const credentials = {
-    ACCOUNT_ID: context.request.headers.get('ACCOUNT_ID'),
-    AWS_ACCESS_KEY_ID: context.request.headers.get('AWS_ACCESS_KEY_ID'),
-    AWS_SECRET_ACCESS_KEY: context.request.headers.get('AWS_SECRET_ACCESS_KEY'),
-    BUCKET: context.request.headers.get('BUCKET')
+    ACCOUNT_ID: context.env.ACCOUNT_ID,
+    AWS_ACCESS_KEY_ID: context.env.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: context.env.AWS_SECRET_ACCESS_KEY,
+    BUCKET: context.env.BUCKET
   }
 
   // generate URL
