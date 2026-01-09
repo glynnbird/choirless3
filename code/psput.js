@@ -1,6 +1,6 @@
 import { okResponse, notOkResponse, missingResponse, notOk } from './lib/constants.js'
 import { mustBePOST, mustBeJSON, apiKey, handleCORS } from './lib/checks.js'
-import { generateR2PresignedUrl } from './lib/psu.js'
+import { generateR2PresignedUrl } from './lib/psu2.js'
 
 export async function onRequest(context) {
   // handle POST/JSON/apikey chcecks
@@ -17,14 +17,20 @@ export async function onRequest(context) {
 
   // get keys
   const credentials = {
-    ACCOUNT_ID: context.env.ACCOUNT_ID,
-    AWS_ACCESS_KEY_ID: context.env.AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY: context.env.AWS_SECRET_ACCESS_KEY,
-    BUCKET: context.env.BUCKET
+    R2_ACCOUNT_ID: context.env.ACCOUNT_ID,
+    R2_ACCESS_KEY_ID: context.env.AWS_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY: context.env.AWS_SECRET_ACCESS_KEY,
+    R2_BUCKET: context.env.BUCKET
   }
 
   // generate URL
-  const putUrl = await generateR2PresignedUrl('GET', 'test.jpg', 'img/jpeg', 3600*24, credentials) 
+  const options = {
+    key: 'test.jpg', 
+    contentType: 'image/jpeg', 
+    expiresIn: 3600*24, 
+    method: 'PUT'  
+  }
+  const putUrl = await generateR2PresignedUrl(options, credentials) 
 
   // reply
   const response = {
