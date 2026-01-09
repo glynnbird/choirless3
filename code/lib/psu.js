@@ -8,7 +8,7 @@
  * Compatible with Cloudflare Workers (no Node.js dependencies)
  */
 export async function generateR2PresignedUrl(method, key, contentType, expiresIn, credentials) {
-
+  console.log(credentials)
   // Validate inputs
   if (
     !credentials.AWS_ACCESS_KEY_ID ||
