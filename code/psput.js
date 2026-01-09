@@ -24,7 +24,7 @@ export async function onRequest(context) {
   }
 
   // generate URL
-  const putUrl = generateR2PresignedUrl('GET', 'test.jpg', 'img/jpeg', 3600*24, credentials) 
+  const putUrl = await generateR2PresignedUrl('GET', 'test.jpg', 'img/jpeg', 3600*24, credentials) 
 
   // reply
   const response = {
