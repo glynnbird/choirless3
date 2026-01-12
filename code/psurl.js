@@ -10,11 +10,6 @@ export async function onRequest(context) {
   // parse the json
   const json = await context.request.json()
 
-  // we need a path
-  if (!json.path) {
-    return new Response(notOk, notOkResponse)
-  }
-
   // get keys
   const credentials = {
     R2_ACCOUNT_ID: context.env.ACCOUNT_ID,
@@ -24,16 +19,19 @@ export async function onRequest(context) {
   }
 
   // generate URL
-  const options = json
-  const u = await generateR2PresignedUrl(options, credentials) 
+  try {
+    const u = await generateR2PresignedUrl(json, credentials) 
 
-  // reply
-  const response = {
-    ok: true,
-    url: url,
-    optsions: json
+    // reply
+    const response = {
+      ok: true,
+      url: url,
+      optsions: json
+    }
+    return new Response(JSON.stringify(response), okResponse)
+  } catch (e) {
+    console.log('error', e)
+    return new Response(notOk, notOkResponse)
   }
-  return new Response(JSON.stringify(response), okResponse)
-
 }
 
