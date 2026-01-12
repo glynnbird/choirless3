@@ -1,4 +1,4 @@
-import { okResponse, notOkResponse, missingResponse, notOk } from './lib/constants.js'
+import { okResponse, notOkResponse, notOk } from './lib/constants.js'
 import { apiKey, handleCORS } from './lib/checks.js'
 
 export async function onRequest(context) {
