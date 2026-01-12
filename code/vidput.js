@@ -15,7 +15,7 @@ export async function onRequest(context) {
   }
   
   // write to object storage
-  const r2obj = await env.VIDEO_BUCKET.put(key, context.request.body)
+  const r2obj = await context.env.VIDEO_BUCKET.put(key, context.request.body)
 
   return new Response(JSON.stringify(r2obj), okResponse)
 }
