@@ -24,18 +24,14 @@ export async function onRequest(context) {
   }
 
   // generate URL
-  const options = {
-    key: 'test.jpg', 
-    contentType: 'image/jpeg', 
-    expiresIn: 3600*24, 
-    method: 'PUT'  
-  }
-  const putUrl = await generateR2PresignedUrl(options, credentials) 
+  const options = json
+  const u = await generateR2PresignedUrl(options, credentials) 
 
   // reply
   const response = {
     ok: true,
-    url: putUrl
+    url: url,
+    optsions: json
   }
   return new Response(JSON.stringify(response), okResponse)
 
