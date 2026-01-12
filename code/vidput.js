@@ -10,12 +10,13 @@ export async function onRequest(context) {
   // get request args
   let url = new URL(context.request.url)
   const key = url.searchParams.get('key')
-  if (!key) {
+  const ct = url.searchParams.get('content_type')
+  if (!key || !ct) {
     return new Response(notOk, notOkResponse)
   }
   
   // write to object storage
-  const r2obj = await context.env.VIDEO_BUCKET.put(key, context.request.body)
+  const r2obj = await context.env.VIDEO_BUCKET.put(key, context.request.body, { httpMetaData: { contentType: ct}})
 
   return new Response(JSON.stringify(r2obj), okResponse)
 }
