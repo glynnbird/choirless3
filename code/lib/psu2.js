@@ -48,7 +48,7 @@ async function generateR2PresignedUrl(options, credentials) {
         throw new Error("Missing required R2 credentials");
     }
     if (!key || !contentType || expiresIn <= 0 || expiresIn > 604800) {
-        throw new Error("Invalid parameters for presigned URL generation");
+        throw new Error("Invalid parameters for presigned URL generation: " + JSON.stringify(options));
     }
     const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, "");
     const dateStamp = date.slice(0, 8);
