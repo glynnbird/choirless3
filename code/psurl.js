@@ -25,7 +25,7 @@ export async function onRequest(context) {
     // reply
     const response = {
       ok: true,
-      url: url,
+      url: u,
       optsions: json
     }
     return new Response(JSON.stringify(response), okResponse)
