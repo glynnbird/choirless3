@@ -36,22 +36,6 @@ resource "cloudflare_pages_project" "frontend_project" {
             type = "plain_text"
             value = random_string.apiKey.id
           }
-          ACCOUNT_ID = {
-            type = "plain_text"
-            value = var.cloudflare_account_id
-          }
-          AWS_ACCESS_KEY_ID = {
-            type = "plain_text"
-            value = var.aws_access_key_id
-          }
-          AWS_SECRET_ACCESS_KEY = {
-            type = "plain_text"
-            value = var.aws_secret_access_key
-          }
-          BUCKET = {
-            type = "plain_text"
-            value = cloudflare_r2_bucket.video_bucket.name
-          }
         }
 
         r2_buckets = {
@@ -75,22 +59,6 @@ resource "cloudflare_pages_project" "frontend_project" {
           API_KEY = {
             type = "plain_text"
             value = random_string.apiKey.id
-          }
-          ACCOUNT_ID = {
-            type = "plain_text"
-            value = var.cloudflare_account_id
-          }
-          AWS_ACCESS_KEY_ID = {
-            type = "plain_text"
-            value = var.aws_access_key_id
-          }
-          AWS_SECRET_ACCESS_KEY = {
-            type = "plain_text"
-            value = var.aws_secret_access_key
-          }
-          BUCKET = {
-            type = "plain_text"
-            value = cloudflare_r2_bucket.video_bucket.name
           }
         }
 
