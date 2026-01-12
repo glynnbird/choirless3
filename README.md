@@ -25,3 +25,19 @@ curl -X POST -H'Content-type:application/json' -H"apikey: $APIKEY" -d'{"title":"
 curl -X POST -H'Content-type:application/json' -H"apikey: $APIKEY" -d'{"id":"1767801950583"}' "https://$URL/api/get"
 {"ok":true,"doc":{"id":"1767801950583","title":"Testy 2","tracks":[],"ts":0}}
 ```
+
+## Upload
+
+```sh
+curl -X POST  -H"apikey: $APIKEY" -F 'body=@example.webm' "https://$URL/api/vidput?key=example.webm"
+{"storageClass":"Standard","customMetadata":{},"httpMetadata":{},"uploaded":"2026-01-12T11:37:05.223Z","checksums":{"md5":"f339c5d9c070adcf491732ec29604566"},"httpEtag":"\"f339c5d9c070adcf491732ec29604566\"","etag":"f339c5d9c070adcf491732ec29604566","size":901401,"version":"7e644e013091c67f2f6c6bf93127488c","key":"example.webm"}
+```
+
+## Download
+
+```sh
+curl -X GET  "https://$URL/api/vidput?key=example.webm&apikey=$APIKEY"
+...
+```
+
+
