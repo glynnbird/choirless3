@@ -52,6 +52,7 @@ export default function () {
     setBusy()
     try {
       console.log('API', '/api/add')
+      song.numTracks = song.tracks.length
       const doc = {}
       Object.assign(doc, song)
       const ret = await $api('/api/add', { body: doc })
@@ -114,6 +115,7 @@ export default function () {
 
     // create alert
     showAlert('Deleted Song', 'error')
+    localStorage.setItem(SONGS_KEY, JSON.stringify(songs.value))
   }
 
   // load the data from the cache & the API, but only the first time this is invoked
@@ -141,6 +143,7 @@ export default function () {
     }
     await addSong(song, false)
     songs.value[i] = song
+    localStorage.setItem(SONGS_KEY, JSON.stringify(songs.value))
   }
 
   async function getSong(id) {
@@ -152,10 +155,13 @@ export default function () {
       console.log('song cache hit', id)
       return songs.value[i]
     } else {
+      setBusy()
       const s = await getSongFromAPI(id)
+      unsetBusy()
       s.full = true
       songs.value[i] = s
       console.log('song cache miss', id)
+      localStorage.setItem(SONGS_KEY, JSON.stringify(songs.value))
       return songs.value[i]
     }
   }

@@ -9,7 +9,6 @@
 <template>
   <!-- refresh the app -->
   <PWARefresh></PWARefresh>
-
   <v-card class="songcard" v-for="song in songs" :to="`/song/${song.id}`">
     <v-card-title>{{ song.title }}</v-card-title>
     <v-card-text>

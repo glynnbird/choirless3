@@ -3,6 +3,7 @@
   const { auth } = useAuth()
   const apiHome = config.public['apiBase'] || window.location.origin
   const { showAlert } = useShowAlert()
+  const { setBusy, unsetBusy } = useBusy()
   const route = useRoute()
   const { getSong, updateSong, calculateVideoURL } = useSongsList()
 
@@ -18,6 +19,7 @@
   const song = ref({})
   const backingTrackURL = ref('')
   const backingvp = ref(null)
+  const uploading = ref(false)
   let perfStartTime = 0
   song.value = await getSong(songId.value)
 
@@ -56,6 +58,8 @@
   }
 
   async function save() {
+    setBusy()
+    uploading.value = true
     let meta = {
       partId: new Date().getTime(),
       songId: songId.value,
@@ -67,6 +71,8 @@
     meta.key = await cloudSaveVideo(meta.songId, meta.partId, recordedVideo.value.blob)
     song.value.tracks.push(meta)
     await updateSong(meta.songId, song.value)
+    unsetBusy()
+    uploading.value = false
     await navigateTo(`/song/${meta.songId}`)
   }
 
@@ -105,6 +111,6 @@
   </v-row>
   <v-btn color="primary" :disabled="recording || partName ==''" @click="record">Record</v-btn>
   <v-btn color="danger" :disabled="!recording" @click="stop">Stop</v-btn>
-  <v-btn color="error" :disabled="!recordedVideo" @click="save">Save</v-btn>
+  <v-btn color="error" :disabled="!recordedVideo || uploading" @click="save">Save</v-btn>
   <VideoPlayer title="Recording" :url="recordedVideo.videoURL" v-if="recordingComplete"></VideoPlayer>
 </template>
