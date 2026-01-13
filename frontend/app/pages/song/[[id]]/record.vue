@@ -106,6 +106,5 @@
   <v-btn color="primary" :disabled="recording || partName ==''" @click="record">Record</v-btn>
   <v-btn color="danger" :disabled="!recording" @click="stop">Stop</v-btn>
   <v-btn color="error" :disabled="!recordedVideo" @click="save">Save</v-btn>
-  <v-btn color="secondary" @click="calculateOffset">Offset?</v-btn>
   <VideoPlayer title="Recording" :url="recordedVideo.videoURL" v-if="recordingComplete"></VideoPlayer>
 </template>
