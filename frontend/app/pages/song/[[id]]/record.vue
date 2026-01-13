@@ -4,7 +4,7 @@
   const apiHome = config.public['apiBase'] || window.location.origin
   const { showAlert } = useShowAlert()
   const route = useRoute()
-  const { getSong, updateSong } = useSongsList()
+  const { getSong, updateSong, calculateVideoURL } = useSongsList()
 
   // local refs
   const partName = ref('')
@@ -16,20 +16,43 @@
   const isBacking = ref(true)
   const offset = ref(0)
   const song = ref({})
+  const backingTrackURL = ref('')
+  const backingvp = ref(null)
+  let perfStartTime = 0
   song.value = await getSong(songId.value)
+
+  // if there's tracks already there, then this isn't the backing track
+  if (song.value.tracks.length > 0) {
+    const backingTrack = song.value.tracks.filter((t) => {
+      if (t.isBacking) {
+        return true
+      }
+    })
+    if (backingTrack.length > 0) {
+      isBacking.value = false
+      backingTrackURL.value = calculateVideoURL(backingTrack[0])
+    }
+  }
 
   async function record() {
     recordingComplete.value = false
     recordedVideo.value = null
-    recorder.value.record()
+    perfStartTime = await recorder.value.record()
+    console.log('perfStartTime', perfStartTime)
+    if (!isBacking.value) {
+      backingvp.value.play()
+      setTimeout(calculateOffset, 3000)
+    }
     recording.value = true
   }
   
   async function stop() {
     recordedVideo.value = await recorder.value.stop()
-    console.log(recordedVideo.value)
     recording.value = false
     recordingComplete.value = true
+    if (!isBacking.value) {
+      backingvp.value.stop()
+    }
   }
 
   async function save() {
@@ -64,19 +87,25 @@
     return k
   }
 
+  async function calculateOffset() {
+    const a = backingvp.value.getCurrentTime()
+    const b = recorder.value.getCurrentTime() - perfStartTime
+    console.log('a',a,'b',b)
+    offset.value = Math.abs((a - b) * 1000)
+  }
+
 </script>
 
 
 <template>
- {{partName }}{{  songId }} {{ isBacking }} {{ offset }} {{ song }}
-
-  <!-- activate camera -->
-
-    <!-- activate camera button -->
   <v-text-field label="Part Name" v-model="partName"></v-text-field>
-  <Recorder ref="recorder" title="You"></Recorder>
+  <v-row>
+    <v-col><Recorder ref="recorder" title="Live"></Recorder></v-col>
+    <v-col v-if="!isBacking"><VideoPlayer ref="backingvp" :url="backingTrackURL" title="Backing"></VideoPlayer></v-col>
+  </v-row>
   <v-btn color="primary" :disabled="recording || partName ==''" @click="record">Record</v-btn>
   <v-btn color="danger" :disabled="!recording" @click="stop">Stop</v-btn>
   <v-btn color="error" :disabled="!recordedVideo" @click="save">Save</v-btn>
+  <v-btn color="secondary" @click="calculateOffset">Offset?</v-btn>
   <VideoPlayer title="Recording" :url="recordedVideo.videoURL" v-if="recordingComplete"></VideoPlayer>
 </template>

@@ -59,7 +59,8 @@ async function record() {
     performanceData.value.push(e.data)
   };
   mR.onstop = function (e) { }
-  mR.start(50);
+  mR.start(50)
+  return performanceVideo.value.currentTime
 }
 
 function getCurrentTime() {
@@ -98,10 +99,15 @@ defineExpose({
 
 setTimeout(enableCapture, 50)
 </script>
+<style>
+.vr {
+  max-width: 400px;
+}
+</style>
 <template>
   <div>
     <h2>{{ title }}</h2>
     <v-alert color="danger" v-if="noMediaDevices">ERROR: No video camera found</v-alert>
-    <video v-if="!noMediaDevices" data="pv" ref="performanceVideo" muted></video>
+    <video class="vr" v-if="!noMediaDevices" data="pv" ref="performanceVideo" muted></video>
   </div>
 </template>

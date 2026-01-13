@@ -1,7 +1,7 @@
 <script setup>
 
 // composables
-const { getSong, calculateVideoURL } = useSongsList()
+const { getSong, calculateVideoURL, deleteTrack } = useSongsList()
 const { showAlert } = useShowAlert()
 const route = useRoute()
 const id = route.params.id
@@ -38,7 +38,7 @@ if (id) {
         <VideoPlayer :url="calculateVideoURL(track)"></VideoPlayer>
      </v-card-text>
      <v-card-actions>
-        <v-btn color="error" :to="`/song/${id}/track/${t}`">Delete</v-btn>
+        <v-btn color="error" @click="deleteTrack(song.id, t)">Delete</v-btn>
      </v-card-actions>
    </v-card>
    <v-btn color :to="`/song/${id}/record`">Add</v-btn>

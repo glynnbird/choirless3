@@ -160,6 +160,20 @@ export default function () {
     }
   }
 
+  async function deleteTrack(songId, trackOffset) {
+    const i = locateIndex(songId)
+    if (i === -1) {
+      return null
+    }
+    if (trackOffset >= songs.value[i].tracks[trackOffset].length) {
+      return null
+    }
+    const key = songs.value[i].tracks[trackOffset].key
+    songs.value[i].tracks.splice(trackOffset, 1)
+    await updateSong(songId, songs.value[i])
+    await $api('/api/viddel', { body: { key } })
+  }
+
   function calculateVideoURL(track) {
     if (!track.key) {
       return ''
@@ -170,5 +184,5 @@ export default function () {
     return u.toString()
   }
 
-  return { songs, calculateVideoURL, getSong, updateSong, locateIndex, emptySong, addSong, loadFromAPI, deleteSong, getSongFromAPI }
+  return { songs, deleteTrack, calculateVideoURL, getSong, updateSong, locateIndex, emptySong, addSong, loadFromAPI, deleteSong, getSongFromAPI }
 }
