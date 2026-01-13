@@ -1,8 +1,8 @@
 <script setup>
 
 // composables
-const { songs, getSongFromAPI, locateIndex, emptyProg } = useSongsList()
-const { getSongCache, setSongCache } = useSingleSongCache()
+const { getSong, calculateVideoURL } = useSongsList()
+const { showAlert } = useShowAlert()
 const route = useRoute()
 const id = route.params.id
 
@@ -11,32 +11,35 @@ const song = ref({})
 
 // if we have an id
 if (id) {
-  try {
-    // if the programme is in the prog cache, use it
-    const p = getSongCache(id)
-    if (p) {
-      song.value = p
-    } else {
-      // otherwise do a first quick load from prog list
-      const i = locateIndex(id)
-      console.log('located index', i)
-      if (id) {
-        song.value = songs.value[i]
-      }
-
-      // then load the full prog in the background
-      setTimeout(async () => {
-        song.value = await getSongFromAPI(id)
-        setSongCache(id, song.value)
-      }, 1)
-    }
-  } catch (e) {
-    console.error('failed to fetch song', e)
+  song.value = await getSong(id)
+  if (song.value === null) {
+    showAlert('Could not load song', 'error')
   }
 }
 </script>
+<style>
+.track {
+  margin-bottom: 15px;
+}
+.chippy {
+  margin-left: 10px;
+}
+</style>
 <template>
   {{ song }}
    <PageTitle :title="song.title"></PageTitle>
+   <v-card class="track" v-for="track,t of song.tracks">
+     <v-card-title>{{ track.partName }}</v-card-title>
+     <v-subtitle>
+      <v-chip class="chippy" color="primary" v-if="track.isBacking">Backing Track</v-chip>
+      <v-chip class="chippy" color="secondary">Offset: {{ track.offset }}ms</v-chip>
+     </v-subtitle>
+     <v-card-text>
+        <VideoPlayer :url="calculateVideoURL(track)"></VideoPlayer>
+     </v-card-text>
+     <v-card-actions>
+        <v-btn color="error" :to="`/song/${id}/track/${t}`">Delete</v-btn>
+     </v-card-actions>
+   </v-card>
    <v-btn color :to="`/song/${id}/record`">Add</v-btn>
 </template>

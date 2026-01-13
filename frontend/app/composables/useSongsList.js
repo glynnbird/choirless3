@@ -134,5 +134,41 @@ export default function () {
     }, 1)
   }
 
-  return { songs, locateIndex, emptySong, addSong, loadFromAPI, deleteSong, getSongFromAPI }
+  async function updateSong(id, song) {
+    const i = locateIndex(id)
+    if (i === -1) {
+      return null
+    }
+    await addSong(song, false)
+    songs.value[i] = song
+  }
+
+  async function getSong(id) {
+    const i = locateIndex(id)
+    if (i === -1) {
+      return null
+    }
+    if (songs.value[i].full) {
+      console.log('song cache hit', id)
+      return songs.value[i]
+    } else {
+      const s = await getSongFromAPI(id)
+      s.full = true
+      songs.value[i] = s
+      console.log('song cache miss', id)
+      return songs.value[i]
+    }
+  }
+
+  function calculateVideoURL(track) {
+    if (!track.key) {
+      return ''
+    }
+    const u = new URL('/api/vidget', apiHome)
+    u.searchParams.append('apikey', auth.value.apiKey)
+    u.searchParams.append('key', track.key)
+    return u.toString()
+  }
+
+  return { songs, calculateVideoURL, getSong, updateSong, locateIndex, emptySong, addSong, loadFromAPI, deleteSong, getSongFromAPI }
 }

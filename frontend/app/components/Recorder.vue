@@ -101,6 +101,7 @@ setTimeout(enableCapture, 50)
 <template>
   <div>
     <h2>{{ title }}</h2>
-    <video data="pv" ref="performanceVideo" muted></video>
+    <v-alert color="danger" v-if="noMediaDevices">ERROR: No video camera found</v-alert>
+    <video v-if="!noMediaDevices" data="pv" ref="performanceVideo" muted></video>
   </div>
 </template>
