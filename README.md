@@ -39,3 +39,23 @@ curl -X POST  -H"apikey: $APIKEY" -T example.webm "https://$URL/api/vidput?key=e
 curl "https://$URL/api/vidget?key=example.webm&apikey=$APIKEY" > test.webm
 ...
 ```
+
+## Syncing videos to local directory
+
+```sh
+mkdir videos
+cd videos
+```
+
+Create a script like this:
+
+```sh
+#!/bin/bash
+export AWS_ACCESS_KEY_ID=xxxx
+export AWS_SECRET_ACCESS_KEY=yyy
+export AWS_DEFAULT_REGION=auto
+export AWS_ENDPOINT_URL="https://ACCOUNTID.r2.cloudflarestorage.com"
+aws s3 sync s3://choirless3-video-storage .
+```
+
+run it to sync your cloud videos locally.

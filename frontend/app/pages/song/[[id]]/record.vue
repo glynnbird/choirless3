@@ -66,6 +66,8 @@
       partName: partName.value,
       isBacking: isBacking.value,
       offset: offset.value,
+      width: recordedVideo.value.streamWidth,
+      height: recordedVideo.value.streamHeight,
       key: ''
     }
     meta.key = await cloudSaveVideo(meta.songId, meta.partId, recordedVideo.value.blob)

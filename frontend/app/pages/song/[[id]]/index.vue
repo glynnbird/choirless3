@@ -60,4 +60,7 @@ async function actualDelete() {
     </v-card-actions>
   </v-card>
   <v-btn color="primary" :to="`/song/${id}/record`">Add</v-btn>
+  <pre>
+    {{ JSON.stringify(song) }}
+  </pre>
 </template>

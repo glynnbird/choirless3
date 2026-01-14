@@ -1,0 +1,49 @@
+{
+  "id": "1767801950583",
+  "title": "Testy 2",
+  "tracks": [
+    {
+      "partId": 1768318115589,
+      "songId": "1767801950583",
+      "partName": "Guitar",
+      "isBacking": true,
+      "offset": 0,
+      "key": "1767801950583/1768318115589.webm"
+    },
+    {
+      "partId": 1768318213747,
+      "songId": "1767801950583",
+      "partName": "Pick",
+      "isBacking": false,
+      "offset": 125.4800000000027,
+      "key": "1767801950583/1768318213747.webm"
+    },
+    {
+      "partId": 1768318314066,
+      "songId": "1767801950583",
+      "partName": "capo",
+      "isBacking": false,
+      "offset": 183.0219999999998,
+      "key": "1767801950583/1768318314066.webm"
+    },
+    {
+      "partId": 1768405382908,
+      "songId": "1767801950583",
+      "partName": "Electric",
+      "isBacking": false,
+      "offset": 101.93800000000985,
+      "key": "1767801950583/1768405382908.webm"
+    },
+    {
+      "partId": 1768405581211,
+      "songId": "1767801950583",
+      "partName": "Bass",
+      "isBacking": false,
+      "offset": 127.62499999999565,
+      "key": "1767801950583/1768405581211.webm"
+    }
+  ],
+  "ts": 0,
+  "full": true,
+  "numTracks": 5
+}

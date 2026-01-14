@@ -7,3 +7,5 @@ code/dist
 dist
 code/node_modules
 functions/api/*.js
+videos
+node_modules
