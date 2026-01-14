@@ -41,6 +41,12 @@ async function actualDelete() {
 .chippy {
   margin-left: 10px;
 }
+.prejson {
+  margin-top:25px;
+  background-color: #444;
+  color: white;
+  padding: 25px;
+}
 </style>
 <template>
    <ConfirmDialog title="Are you sure you want to delete this track?" :text="preDeleteTrackName" verb="Delete"
@@ -66,7 +72,5 @@ async function actualDelete() {
     </v-card-actions>
   </v-card>
   <v-btn color="primary" :to="`/song/${id}/record`">Add</v-btn>
-  <pre>
-    {{ JSON.stringify(song, null, '  ') }}
-  </pre>
+  <pre class="prejson">{{ JSON.stringify(song, null, '  ') }}</pre>
 </template>

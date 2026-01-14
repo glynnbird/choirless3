@@ -26,6 +26,13 @@ curl -X POST -H'Content-type:application/json' -H"apikey: $APIKEY" -d'{"id":"176
 {"ok":true,"doc":{"id":"1767801950583","title":"Testy 2","tracks":[],"ts":0}}
 ```
 
+### Del
+
+```sh
+curl -X POST -H'Content-type:application/json' -H"apikey: $APIKEY" -d'{"id":"1767801950583"}' "https://$URL/api/del"
+{"ok":true}
+```
+
 ## Upload
 
 ```sh
