@@ -53,7 +53,13 @@ async function actualDelete() {
     <v-chip class="chippy" color="secondary">Offset: {{ track.offset.toFixed(0) }}ms</v-chip>
     </v-subtitle>
     <v-card-text>
-      <VideoPlayer :url="calculateVideoURL(track)"></VideoPlayer>
+      <v-expansion-panels>
+      <v-expansion-panel title="Video">
+        <v-expansion-panel-text>
+          <VideoPlayer :url="calculateVideoURL(track)"></VideoPlayer>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+      </v-expansion-panels>
     </v-card-text>
     <v-card-actions>
       <v-btn color="error" :disabled="track.isBacking && song.tracks.length > 1" @click="preDeleteTrack(t,track.partName)">Delete</v-btn>
@@ -61,6 +67,6 @@ async function actualDelete() {
   </v-card>
   <v-btn color="primary" :to="`/song/${id}/record`">Add</v-btn>
   <pre>
-    {{ JSON.stringify(song) }}
+    {{ JSON.stringify(song, null, '  ') }}
   </pre>
 </template>
