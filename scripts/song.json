@@ -41,9 +41,29 @@
       "isBacking": false,
       "offset": 127.62499999999565,
       "key": "1767801950583/1768405581211.webm"
+    },
+    {
+      "partId": 1768406615568,
+      "songId": "1767801950583",
+      "partName": "Vocal1",
+      "isBacking": false,
+      "offset": 94.5000000000027,
+      "width": 640,
+      "height": 480,
+      "key": "1767801950583/1768406615568.webm"
+    },
+    {
+      "partId": 1768406696750,
+      "songId": "1767801950583",
+      "partName": "Vocal2",
+      "isBacking": false,
+      "offset": 103.08400000000084,
+      "width": 640,
+      "height": 480,
+      "key": "1767801950583/1768406696750.webm"
     }
   ],
   "ts": 0,
   "full": true,
-  "numTracks": 5
+  "numTracks": 7
 }

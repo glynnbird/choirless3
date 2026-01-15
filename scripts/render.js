@@ -5,6 +5,7 @@ const LOCAL_BUCKETS_PATH = '../videos'
 // node modules
 const fs = require('fs')
 const path = require('path')
+const util = require('node:util')
 const ffmpeg = require('fluent-ffmpeg')
 const ffmpegrunner = require('choirlessffmpegrunner')
 const run = ffmpegrunner.run
@@ -33,7 +34,6 @@ const convertFormat = async (key) => {
   // set ffmpeg inputs
   const command = ffmpeg()
     .input(key)
-    .inputOptions('-seekable 0')
   if (videoPresent) {
     // force input video to 25 fps, 640x480
     command
@@ -64,6 +64,34 @@ const convertFormat = async (key) => {
       '-ac 2']) // mono
   await run(command, true)
 }
+
+
+const stripAudio = async (key, offset) => {
+  if (!fs.existsSync(key)) {
+    console.error('File does not exist', key)
+    return
+  }
+  console.log(`Stripping audio from on ${key}`)
+  const outputKey = key.replace('.webm', '_audio.wav')
+  if (fs.existsSync(outputKey)) {
+    console.error('No need to process - target already exists', outputKey)
+    return
+  }
+  // set ffmpeg inputs
+  const command = ffmpeg()
+    .input(key)
+    .noVideo()
+    .audioFilters([
+      { filter: 'atrim', options: { start: offset } },
+      { filter: 'asetpts', options: 'PTS-STARTPTS' }
+    ])
+    .output(outputKey)
+    .outputFormat('wav')
+  await run(command, true)
+}
+
+
+
 
 // reverse the order of a string
 function reverseString(str) {
@@ -154,12 +182,10 @@ async function render(song, opts) {
     if (ida > idb) return 1
     return 0
   })
-  console.log('rectangles', rectangles)
 
   // boxjam
   const container = { width: opts.width, height: opts.height }
   const adjustedRectangles = boxjam(rectangles, container, opts.margin, opts.center).concat(hiddenParts)
-  console.log('boxjam says', adjustedRectangles)
 
   // construct output JSON
   const output = {
@@ -196,8 +222,6 @@ async function render(song, opts) {
   // of videos that have the same y coordinate. We will process the
   // video later in the pipeline grouped into these slices
   output.runbook = generateRunbook(output.inputs)
-  console.log('output', JSON.stringify(output))
-
   return output
 }
 
@@ -434,7 +458,6 @@ async function renderRow(recipe, sliceId) {
   const videos = recipe.runbook.slices[sliceId]
   console.log('videos', videos)
   const boundingBox = calcBoundingBox(videos)
-  console.log(boundingBox)
   const outputWidth = recipe.output.size[0]
   const outputHeight = boundingBox.bottom - boundingBox.top + 10 // margin of 10 between rows
 
@@ -442,10 +465,10 @@ async function renderRow(recipe, sliceId) {
   const command = ffmpeg()
   for (const video of videos) {
     // calculate path/url of video
-    const partURL = path.join('..','videos',recipe.song_id, video.part_id.toString() + '_converted.nut')
+    const partURL = path.join('..', 'videos', recipe.song_id, video.part_id.toString() + '_converted.nut')
     video.url = partURL
     command.addInput(video.url)
-      .inputOptions(['-seekable 0', '-r 25', '-thread_queue_size 64'])
+      .inputOptions([ '-r 25', '-thread_queue_size 64'])
   }
 
   // build the video & audio pipelines
@@ -455,7 +478,7 @@ async function renderRow(recipe, sliceId) {
     complexVideoFilter.filters.concat(complexAudioFilter.filters),
     complexVideoFilter.outputs.concat(complexAudioFilter.outputs))
 
-  const outPath = path.join('..','videos',recipe.song_id,`slice_${sliceId}.nut`)
+  const outPath = path.join('..', 'videos', recipe.song_id, `slice_${sliceId}.nut`)
   command
     .output(outPath)
     .outputFormat('nut') // nut container
@@ -467,7 +490,7 @@ async function renderRow(recipe, sliceId) {
       '-r 25', // 25 fps
       '-qscale 1', // defines the video quality from 1-31, with 1 being the best. 
       '-qmin 1'])
-  await run(command, true)  
+  await run(command, true)
 }
 
 
@@ -529,7 +552,7 @@ const buildComplexFilter = (videos) => {
 }
 
 async function renderFinal(recipe) {
-  
+
   // get list of run ids
   const rows = recipe.runbook.rows
   let rowCount = 0
@@ -537,7 +560,7 @@ async function renderFinal(recipe) {
     const obj = {
       rowNum: rowCount++,
       runId: r,
-      path: path.join('..','videos',recipe.song_id,`slice_${r}.nut`)
+      path: path.join('..', 'videos', recipe.song_id, `slice_${r}.nut`)
     }
     return obj
   })
@@ -548,7 +571,7 @@ async function renderFinal(recipe) {
   // add the inputs
   for (const i in rows) {
     command.addInput(videos[i].path)
-      .inputOptions(['-seekable 0', '-thread_queue_size 64'])
+      .inputOptions([ '-thread_queue_size 64'])
   }
 
   // build the video & audio pipelines
@@ -556,8 +579,8 @@ async function renderFinal(recipe) {
   command.complexFilter(complexFilter.filters, complexFilter.outputs)
 
   // create temporary directory
-  const outPath = path.join('..','videos',recipe.song_id,`final.nut`)
-  
+  const outPath = path.join('..', 'videos', recipe.song_id, `final.nut`)
+
   // set output parameters
   command
     .output(outPath)
@@ -645,7 +668,7 @@ const buildMasterComplexFilter = (outputWidth, outputHeight, reverbLevel) => {
   }
 }
 
- async function postProduction(recipe) {
+async function postProduction(recipe) {
   console.log('post_production')
 
   // calculate input urls for video file and watermark image
@@ -656,11 +679,8 @@ const buildMasterComplexFilter = (outputWidth, outputHeight, reverbLevel) => {
   // build ffmpeg command
   const command = ffmpeg()
     .addInput(geturl)
-    .inputOptions(['-seekable 0'])
     .addInput(watermarkFile)
-    .inputOptions(['-seekable 0'])
     .addInput(reverbFile)
-    .inputOptions(['-seekable 0'])
 
   // build the video & audio pipelines
   const complexFilter = buildMasterComplexFilter(
@@ -685,21 +705,50 @@ const buildMasterComplexFilter = (outputWidth, outputHeight, reverbLevel) => {
   await run(command, true)
 }
 
+async function masterAudio(recipe) {
+  console.log('master_audio')
+  const masterAudioPath = path.join('..', 'videos', recipe.song_id, 'masteraudio.wav')
+  if (!fs.existsSync(masterAudioPath)) {
+    console.error('Master audio does not exist', masterAudioPath)
+    return
+  }
+  const geturl = path.join('..', 'videos', recipe.song_id, 'final.mp4')
+  const outpath = path.join('..', 'videos', recipe.song_id, 'audiomaster.mp4')
+
+  // ffmpeg -i video.mp4 -i audio.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac output.mp4
+  const params = [
+    '-i', geturl,
+    '-i', masterAudioPath,
+    '-map', '0:v:0',
+    '-map', '1:a:0',
+    '-c:v', 'copy',
+    '-c:a', 'aac',
+    '-y', outpath
+  ]
+  const execFile = util.promisify(require('node:child_process').execFile)
+  const { stdout, stderr } = await execFile('ffmpeg', params)
+  console.log(stdout)
+  console.error(stderr)
+}
+
+
 async function main() {
   // load the song meta
   const song = JSON.parse(fs.readFileSync('./song.json'))
 
   // convert all the song parts to .nut
-  for(const part of song.tracks) {
-    console.log('Converting part', part.partId)
-    await convertFormat(path.join('..', 'videos', part.songId, part.partId + '.webm'))
+  for (const part of song.tracks) {
+    const vid = path.join('..', 'videos', part.songId, part.partId + '.webm')
+    await convertFormat(vid)
+    const offset = part.offset.toFixed(0) / 1000
+    await stripAudio(vid, offset)
   }
 
   // create render recipe
   const recipe = await render(song)
-  
+
   // render each row in the recipe
-  for(const row of recipe.runbook.rows) {
+  for (const row of recipe.runbook.rows) {
     console.log('Rendering row', row)
     await renderRow(recipe, row)
   }
@@ -709,10 +758,13 @@ async function main() {
 
   // post production
   await postProduction(recipe)
+
+  // optionally add master audio
+  await masterAudio(recipe)
 }
 main()
 
-
+//stripAudio('../videos/1767801950583/1768318213747.webm', 2.0)
 // const song = JSON.parse(fs.readFileSync('./song.json'))
 // render(song)
 //convertFormat('../videos/1767801950583/1768318213747.webm')
