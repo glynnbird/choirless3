@@ -25,7 +25,8 @@ export async function onRequest(context) {
 
     // add JSON to the video bucket
     const key = `${json.id}/song.json`
-    await context.env.VIDEO_BUCKET.put(key, doc)
+    console.log('writing doc to', key)
+    await context.env.VIDEO_BUCKET.put(key, JSON.stringify(doc))
 
     // send response
     return new Response(JSON.stringify(response), okResponse)
