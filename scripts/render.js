@@ -112,7 +112,7 @@ const defaultOpts = {
   reverbType: 'hall',
   panning: true,
   watermark: 'choirless_watermark.png',
-  margin: 25,
+  margin: 0,
   center: true,
   name: 'auto'
 }
@@ -231,7 +231,6 @@ async function render(song, opts) {
   // create lookup by sliceid showing a hash the output file of that slice
   let totalHash = ''
   for (sliceId of Object.keys(output.runbook.slices)) {
-    console.log('sliceId', sliceId)
     const hash256 = hash(output.runbook.slices[sliceId].map((v) => {
       return v.part_id.toString()
     }).join(''))
