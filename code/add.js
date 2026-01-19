@@ -23,6 +23,10 @@ export async function onRequest(context) {
     // add to KV store
     const response = await add(context.env.CHOIRLESSKV, doc)
 
+    // add JSON to the video bucket
+    const key = `${json.id}/song.json`
+    await context.env.VIDEO_BUCKET.put(key, doc)
+
     // send response
     return new Response(JSON.stringify(response), okResponse)
   }
