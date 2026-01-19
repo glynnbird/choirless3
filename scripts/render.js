@@ -13,8 +13,6 @@ const probe = ffmpegrunner.probe
 const crypto = require("crypto")
 const boxjam = require('boxjam')
 
-
-
 const convertFormat = async (key) => {
   if (!fs.existsSync(key)) {
     console.error('File does not exist', key)
@@ -731,36 +729,72 @@ async function masterAudio(recipe) {
   console.error(stderr)
 }
 
+function getTS() {
+  return (new Date().getTime()) / 1000.0
+}
 
 async function main() {
+  let start
+  const timings = {
+    convertFormat:0,
+    convertAudio:0,
+    generateRecipe:0,
+    createRows:0,
+    final:0,
+    postProduction: 0,
+    masterAudio: 0
+  }
   // load the song meta
   const song = JSON.parse(fs.readFileSync('./song.json'))
 
   // convert all the song parts to .nut
+  start = getTS()
   for (const part of song.tracks) {
     const vid = path.join('..', 'videos', part.songId, part.partId + '.webm')
     await convertFormat(vid)
     const offset = part.offset.toFixed(0) / 1000
+  }
+  timings.convertFormat = getTS() - start
+
+  //convert all the song audio to wav
+  start = getTS()
+  for (const part of song.tracks) {
+    const vid = path.join('..', 'videos', part.songId, part.partId + '.webm')
+    const offset = part.offset.toFixed(0) / 1000
     await stripAudio(vid, offset)
   }
+  timings.convertAudio = getTS() - start
 
   // create render recipe
+  start = getTS()
   const recipe = await render(song)
+  timings.generateRecipe = getTS() - start
 
   // render each row in the recipe
+  start = getTS()
   for (const row of recipe.runbook.rows) {
     console.log('Rendering row', row)
     await renderRow(recipe, row)
   }
+  timings.createRows = getTS() - start
 
   // combine rows
+  start = getTS()
   await renderFinal(recipe)
+  timings.final = getTS() - start
+  
 
   // post production
+  start = getTS()
   await postProduction(recipe)
+  timings.postProduction = getTS() - start
 
   // optionally add master audio
+  start = getTS()
   await masterAudio(recipe)
+  timings.masterAudio = getTS() - start
+
+  console.log('timings', timings)
 }
 main()
 
