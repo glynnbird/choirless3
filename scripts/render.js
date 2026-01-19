@@ -13,6 +13,12 @@ const probe = ffmpegrunner.probe
 const crypto = require("crypto")
 const boxjam = require('boxjam')
 
+function hash(str) {
+  const hash = crypto.createHash('sha256');
+  hash.update(str)
+  return hash.copy().digest('hex').slice(0, 8)
+}
+
 const convertFormat = async (key) => {
   if (!fs.existsSync(key)) {
     console.error('File does not exist', key)
@@ -220,6 +226,26 @@ async function render(song, opts) {
   // of videos that have the same y coordinate. We will process the
   // video later in the pipeline grouped into these slices
   output.runbook = generateRunbook(output.inputs)
+  output.slices = {}
+
+  // create lookup by sliceid showing a hash the output file of that slice
+  let totalHash = ''
+  for (sliceId of Object.keys(output.runbook.slices)) {
+    console.log('sliceId', sliceId)
+    const hash256 = hash(output.runbook.slices[sliceId].map((v) => {
+      return v.part_id.toString()
+    }).join(''))
+    totalHash += hash256
+    const outputKey = path.join('..', 'videos', output.song_id, `slice_${sliceId}_${hash256}.nut`)
+    output.slices[sliceId] = {
+      hash: hash256,
+      path: outputKey
+    }
+  }
+
+  // the output hash is hash of the slice hashes
+  output.hash = hash(totalHash)
+  
   return output
 }
 
@@ -454,7 +480,12 @@ const buildComplexAudioFilter = (videos) => {
 
 async function renderRow(recipe, sliceId) {
   const videos = recipe.runbook.slices[sliceId]
-  console.log('videos', videos)
+  const outputKey = recipe.slices[sliceId].path
+
+  if (fs.existsSync(outputKey)) {
+    console.error('No need to process - target already exists', outputKey)
+    return
+  }
   const boundingBox = calcBoundingBox(videos)
   const outputWidth = recipe.output.size[0]
   const outputHeight = boundingBox.bottom - boundingBox.top + 10 // margin of 10 between rows
@@ -476,9 +507,9 @@ async function renderRow(recipe, sliceId) {
     complexVideoFilter.filters.concat(complexAudioFilter.filters),
     complexVideoFilter.outputs.concat(complexAudioFilter.outputs))
 
-  const outPath = path.join('..', 'videos', recipe.song_id, `slice_${sliceId}.nut`)
+  
   command
-    .output(outPath)
+    .output(outputKey)
     .outputFormat('nut') // nut container
     .outputOptions([
       '-pix_fmt yuv420p',
@@ -551,14 +582,22 @@ const buildComplexFilter = (videos) => {
 
 async function renderFinal(recipe) {
 
+  // create temporary directory
+  console.log('renderFinal')
+  const outputKey = path.join('..', 'videos', recipe.song_id, `final_${recipe.hash}.nut`)
+  if (fs.existsSync(outputKey)) {
+    console.error('No need to process - target already exists', outputKey)
+    return
+  }
   // get list of run ids
   const rows = recipe.runbook.rows
   let rowCount = 0
   const videos = recipe.runbook.rows.map((r) => {
+    const path = recipe.slices[r].path
     const obj = {
       rowNum: rowCount++,
       runId: r,
-      path: path.join('..', 'videos', recipe.song_id, `slice_${r}.nut`)
+      path: path
     }
     return obj
   })
@@ -581,7 +620,7 @@ async function renderFinal(recipe) {
 
   // set output parameters
   command
-    .output(outPath)
+    .output(outputKey)
     .outputFormat('nut') // nut container
     .outputOptions([
       '-pix_fmt yuv420p',
@@ -669,8 +708,14 @@ const buildMasterComplexFilter = (outputWidth, outputHeight, reverbLevel) => {
 async function postProduction(recipe) {
   console.log('post_production')
 
+  // create temporary directory
+  const outputKey = path.join('..', 'videos', recipe.song_id, `final_${recipe.hash}.mp4`)
+  if (fs.existsSync(outputKey)) {
+    console.error('No need to process - target already exists', outputKey)
+    return
+  }
   // calculate input urls for video file and watermark image
-  const geturl = path.join('..', 'videos', recipe.song_id, 'final.nut')
+  const geturl = path.join('..', 'videos', recipe.song_id, `final_${recipe.hash}.nut`)
   const reverbFile = `${recipe.output.reverb_type}.wav`
   const watermarkFile = 'choirless_watermark.png'
 
@@ -687,12 +732,9 @@ async function postProduction(recipe) {
     recipe.output.reverb)
   command.complexFilter(complexFilter.filters, complexFilter.outputs)
 
-  // create temporary directory
-  const outpath = path.join('..', 'videos', recipe.song_id, 'final.mp4')
-
   // set output parameters
   command
-    .output(outpath)
+    .output(outputKey)
     .outputFormat('mp4') // mp4 container
     .outputOptions([
       '-pix_fmt yuv420p',
@@ -710,8 +752,13 @@ async function masterAudio(recipe) {
     console.error('Master audio does not exist', masterAudioPath)
     return
   }
-  const geturl = path.join('..', 'videos', recipe.song_id, 'final.mp4')
-  const outpath = path.join('..', 'videos', recipe.song_id, 'audiomaster.mp4')
+  const geturl = path.join('..', 'videos', recipe.song_id, `final_${recipe.hash}.mp4`)
+  const outputKey = path.join('..', 'videos', recipe.song_id, `audiomaster_${recipe.hash}.mp4`)
+  if (fs.existsSync(outputKey)) {
+    console.error('No need to process - target already exists', outputKey)
+    return
+  }
+  console.log('output', outputKey)
 
   // ffmpeg -i video.mp4 -i audio.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac output.mp4
   const params = [
@@ -721,7 +768,7 @@ async function masterAudio(recipe) {
     '-map', '1:a:0',
     '-c:v', 'copy',
     '-c:a', 'aac',
-    '-y', outpath
+    '-y', outputKey
   ]
   const execFile = util.promisify(require('node:child_process').execFile)
   const { stdout, stderr } = await execFile('ffmpeg', params)
@@ -734,6 +781,23 @@ function getTS() {
 }
 
 async function main() {
+
+  const argv = process.argv
+  if (argv.length !== 3) {
+    console.log('usage:')
+    console.log('  node render <songId>')
+    process.exit()
+  }
+  const songId = argv[2]
+  console.log('songId', songId)
+
+  // load the song json
+  const songJsonPath = path.join('..', 'videos', songId, 'song.json')
+  const song = JSON.parse(fs.readFileSync(songJsonPath))
+  if (!song) {
+    process.exit('Could not load', songJsonPath)
+  }
+
   let start
   const timings = {
     convertFormat:0,
@@ -744,8 +808,6 @@ async function main() {
     postProduction: 0,
     masterAudio: 0
   }
-  // load the song meta
-  const song = JSON.parse(fs.readFileSync('./song.json'))
 
   // convert all the song parts to .nut
   start = getTS()
@@ -768,6 +830,8 @@ async function main() {
   // create render recipe
   start = getTS()
   const recipe = await render(song)
+  const recipePath = path.join('..','videos', songId,'recipe.json')
+  fs.writeFileSync(recipePath, JSON.stringify(recipe))
   timings.generateRecipe = getTS() - start
 
   // render each row in the recipe
@@ -782,7 +846,6 @@ async function main() {
   start = getTS()
   await renderFinal(recipe)
   timings.final = getTS() - start
-  
 
   // post production
   start = getTS()
