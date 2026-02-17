@@ -7,6 +7,7 @@ const performanceStream = ref(null)
 const performanceVideo = ref(null)
 const performanceData = ref([])
 const recording = ref(false)
+const audioLevel = ref(0)
 let mR
 
 async function enableCapture() {
@@ -21,14 +22,44 @@ async function enableCapture() {
     audio: { latency: 0.05, echoCancellation: false },
   };
   let stream;
+  let analyser
   try {
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    stream = await navigator.mediaDevices.getUserMedia(constraints)
+    const audioContext = new AudioContext()
+    const source = audioContext.createMediaStreamSource(stream)
+    analyser = audioContext.createAnalyser()
+    analyser.fftSize = 256 // smaller = faster + smoother meter
+    source.connect(analyser)
   } catch (e) {
     console.log("error", e);
     noMediaDevices.value = true;
     return;
   }
   console.log('stream', stream)
+
+
+  const dataArray = new Uint8Array(analyser.frequencyBinCount)
+
+  function getAudioLevel() {
+    analyser.getByteTimeDomainData(dataArray)
+    let sum = 0
+    for (let i = 0; i < dataArray.length; i++) {
+      const value = (dataArray[i] - 128) / 128
+      sum += value * value
+    }
+
+    const rms = Math.sqrt(sum / dataArray.length)
+    return rms // value between ~0 and ~1
+  }
+  function updateMeter() {
+    const level = getAudioLevel()
+    // Example: normalize + clamp
+    const normalized = Math.min(level * 3, 1)
+    // Update UI
+    audioLevel.value = normalized
+    requestAnimationFrame(updateMeter)
+  }
+  updateMeter()
 
   performanceStream.value = stream;
   streamWidth.value = stream.getVideoTracks()[0].getSettings().width;
@@ -103,11 +134,17 @@ setTimeout(enableCapture, 50)
 .vr {
   max-width: 400px;
 }
+.vid {
+  width:400px;
+}
 </style>
 <template>
   <div>
     <h2>{{ title }}</h2>
     <v-alert color="danger" v-if="noMediaDevices">ERROR: No video camera found</v-alert>
-    <video class="vr" v-if="!noMediaDevices" data="pv" ref="performanceVideo" muted></video>
+    <div class="vid">
+      <video class="vr" v-if="!noMediaDevices" data="pv" ref="performanceVideo" muted></video>
+      <v-progress-linear :model-value="audioLevel" max="1"></v-progress-linear>
+    </div>
   </div>
 </template>

@@ -7,16 +7,19 @@ export default defineNuxtConfig({
   },
   modules: [
     // from https://github.com/vite-pwa/nuxt?tab=readme-ov-file#-usage
-    '@vite-pwa/nuxt',
-    // from https://vuetifyjs.com/en/getting-started/installation/#manual-setup
-    async (options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', config => {
-        if (config && config.plugins) {
-          config.plugins.push(vuetify({ autoImport: true }))
-        }
-      })
-    }
+    '@vite-pwa/nuxt'
   ],
+  vite: {
+    plugins: [
+      // @ts-expect-error
+      vuetify({ autoImport: true })
+    ],
+    vue: {
+      template: {
+        transformAssetUrls,
+      },
+    }
+  },
   app: {
     head: {
       link: [
@@ -68,12 +71,5 @@ export default defineNuxtConfig({
     }
   },
   compatibilityDate: '2025-08-04',
-  devtools: { enabled: true },
-  vite: {
-    vue: {
-      template: {
-        transformAssetUrls,
-      }
-    }
-  }
+  devtools: { enabled: true }
 })
