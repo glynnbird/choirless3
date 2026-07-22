@@ -11,7 +11,6 @@ export default defineNuxtConfig({
   ],
   vite: {
     plugins: [
-      // @ts-expect-error
       vuetify({ autoImport: true })
     ],
     vue: {
@@ -70,6 +69,6 @@ export default defineNuxtConfig({
       apiBase: ''
     }
   },
-  compatibilityDate: '2025-08-04',
+  compatibilityDate: '2026-07-22',
   devtools: { enabled: true }
 })
